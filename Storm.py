@@ -8,9 +8,9 @@ class Storm(ABC):
         super().__init__()
 
     @abstractmethod
-    def calculate_classification(self):
+    def calculate_classification(self) -> str: # type hint
         pass
 
     @abstractmethod
-    def get_advice(self):
+    def get_advice(self) -> str: #type hint
         pass

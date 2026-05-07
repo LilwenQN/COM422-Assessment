@@ -20,7 +20,7 @@ class StormCentre:
                 self.storm_list.remove(storm)
         return True
 
-    def view_storm(self, name: str) -> Storm or None:
+    def view_storm(self, name: str) -> Storm | None: #replace "or" with "|"
         for storm in self.storm_list:
             if storm.name == name:
                 return storm
