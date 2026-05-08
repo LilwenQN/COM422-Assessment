@@ -209,3 +209,52 @@ def calculate_classification(self) -> str:
     return "Snow Storm"
 ```
 ![image](/screenshots/test_create_severe_blizzard_FIX.png)
+
+## Add storm
+### Fail 1
+![image](/screenshots/test_add_storm_duplicate_name_different_type.png)
+```python
+def test_add_storm_duplicate_name_different_type(storm_centre):
+    storm_centre.add_storm(Hurricane("Ruby", 100))
+    assert storm_centre.add_storm(Tornado("Ruby", 10)) == False
+```
+Issue: Duplicate name allowed when one of the types is a Hurricane
+Fix: Correctly assign name in Hurricane
+```python
+def __init__(self, name, wind_speed):
+        super().__init__(name, wind_speed) # replaced "none" with name
+```
+![image](/screenshots/test_add_storm_duplicate_name_different_type_FIX.png)
+
+I noticed another issue while debugging this. The type check on add_storm always returns true. It wouldn't have been caught in a unit test, as there are only 3 children of Storm and they are all valid. I have fixed it below.
+```python
+def add_storm(self, storm: Storm) -> bool:
+    if (len(self.storm_list) <= 20
+            and (isinstance(storm, Blizzard) or isinstance(storm, Tornado) or isinstance(storm, Hurricane)) # fixed this check
+            and not self.already_exists(storm.name)): # refactored this line for ease of reading
+        self.storm_list.append(storm)
+        return True
+    return False
+```
+All the existing tests passed after this change.
+
+### Fail 2
+![image](/screenshots/test_add_storm_21.png)
+```python
+def test_add_storm_21(storm_centre):
+    for i in range(20):
+        assert storm_centre.add_storm(Hurricane(str(i), 100)) == True
+    assert storm_centre.add_storm(Hurricane("21", 100)) == False
+```
+Issue: More than 20 storms can be added
+Fix: Ensure less than 20 storms are in centre before adding
+```python
+def add_storm(self, storm: Storm) -> bool:
+    if (len(self.storm_list) < 20 # changed <= to <
+            and (isinstance(storm, Blizzard) or isinstance(storm, Tornado) or isinstance(storm, Hurricane))
+            and not self.already_exists(storm.name)):
+        self.storm_list.append(storm)
+        return True
+    return False
+```
+![image](/screenshots/test_add_storm_21_FIX.png)

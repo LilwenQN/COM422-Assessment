@@ -3,7 +3,7 @@ from Storm import Storm
 
 class Hurricane(Storm):
     def __init__(self, name, wind_speed):
-        super().__init__("none", wind_speed)
+        super().__init__(name, wind_speed) # replaced "none" with name
 
     def calculate_classification(self) -> str:
         if self.wind_speed in range(74, 96): # replaced 95 with 96

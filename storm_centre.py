@@ -9,7 +9,9 @@ class StormCentre:
         self.storm_list = []
 
     def add_storm(self, storm: Storm) -> bool:
-        if len(self.storm_list) <= 20 and (isinstance(storm, Blizzard) or (storm, Tornado) ) and not self.already_exists(storm.name):
+        if (len(self.storm_list) < 20 # changed <= to <
+             and (isinstance(storm, Blizzard) or isinstance(storm, Tornado) or isinstance(storm, Hurricane)) # fixed this check
+             and not self.already_exists(storm.name)): # refactored this line for ease of reading
             self.storm_list.append(storm)
             return True
         return False
