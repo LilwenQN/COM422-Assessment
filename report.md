@@ -6,7 +6,7 @@
 - update_storm is for updating temperature and windspeed: Both of these might change. Name shouldn't
 
 ## Initial bug fixes
-I wasn't sure if the below were supposed to be found in the tests, or if it was just my linter causing errors, so I made the following changes without a test.
+I think the below errors were just my linter being strict so I made some initial changes to prevent this from being an issue before starting testing, which I have outlined below.
 
 ### Type hinting Storm
 ```python
@@ -228,7 +228,7 @@ def __init__(self, name, wind_speed):
 ```
 ![image](/screenshots/test_add_storm_duplicate_name_different_type_FIX.png)
 
-I noticed another issue while debugging this. The type check on add_storm always returns true. It wouldn't have been caught in a unit test, as there are only 3 children of Storm and they are all valid. I have fixed it below.
+I noticed another issue while debugging this. The type check on add_storm always returns true. It wouldn't have been caught in a unit test, as there are only 3 children of Storm and they are all valid (and Storm is abstract so cannot be created alone). I have fixed it below.
 ```python
 def add_storm(self, storm: Storm) -> bool:
     if (len(self.storm_list) <= 20
