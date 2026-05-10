@@ -455,3 +455,6 @@ def update_storm(self, name, values) -> bool:
     return True # replaced default with True and use False returns for errors
 ```
 ![image](/screenshots/test_update_storm_empty_dict_FIX.png)
+
+## All tests
+![image](screenshots/complete_tests.png)
