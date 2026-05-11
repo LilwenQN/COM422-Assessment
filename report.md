@@ -1,4 +1,83 @@
-# Part 2
+<style>
+    body {
+        font-family: "Helvetica";
+    }
+
+    h1, h2, h3 {
+        font-weight: bold;
+        color: #043952
+    }
+</style>
+
+<center><h1>Part 1</h1></center>
+
+## Testing and Development Overview
+For the development of this system, a shift-left approach is recommended.
+
+> The main idea behind Shift-Left is to start testing earlier in the process. By being proactive, you can catch problems sooner and fix them right away, which saves […] money and effort compared to finding bugs later.
+
+_(Kesavan, 2024, p.1 [^1])_ REFERENCE
+
+Implement this by testing at all stages of an agile development process with CI/CD. Agile allows discrepancies found by tests to be factored into the plan and workload. Agile also gives flexibility to change the plan if requirements are changed, which is crucial for a system responding to natural disasters. Additionally, as an emergency response system, users will not know when the system is required, and continuous deployment allows a Minimum Viable Product to be available as soon as possible, and the most up-to-date version to always be used.
+
+To effectively implement CI/CD, a pipeline should be set up which allows changes to be merged, then tested in various environments before being deployed. Locally, a developer should write and test changes to a small update. Then, the changes can be merged and tested on development environments. This can be one environment, or multiple environments, depending on the nature of the tests (see Automated CI/CD pipeline overview LINK). Finally, it can be sent to production environments. Again, this can be one or multiple (see Production environment(s)) LINK.
+
+## Local Testing
+In the local stage, TDD should be used, bringing testing early in the process. Writing unit and contract tests before the code is developed encourages the testing to be as extensive as possible and encourages developers to consider the testability of the code as they implement it. Contract tests are used to test API requests and responses _(Pact and Fellows, 2023)_ REFERENCE. These can be mocked or complete (depending on whether the API call is internal or external). In addition to TDD, developers should write integration tests in order to capture the interactions between different parts of the code. The simplicity and durability of unit, contract and integration tests means they can cover large amounts of scope with minimal time and maintenance. As the application is data-based and requires accuracy, these tests are vital to ensure that small discrepancies and unexpected results don’t go unnoticed.
+
+BDD should not be used here as it takes a lot of time and does not cover the majority of this system (as it is primarily data import and analysis). It could be useful for checking that results are returned in the correct places, but it cannot check that they are the correct results. BDD is better suited where the front-end is central to the application, and user experience can be used to evaluate the correct functionality of the system.
+
+Automated UI tests could be used at this stage, but they are volatile and take a long time to both write and run. If components are moved, renamed or changed, they can break easily. Manual testing is better suited for this system as it is more flexible. At this stage, simple sense checks and exploratory tests can be carried out by developers on features they have changed, and wider exploratory testing can be carried out later in the process (see Staging environment) LINK.
+ 
+In addition to these code tests, SAST and SCA should be run on all code before merging. These are light on resource, as pre-built SAST and SCA packages can be used and run. This may cost money depending on the frameworks and languages being used, but are important nonetheless, as security is essential to this system. It has significance to social and life-threatening issues, and high media coverage, making this a desirable system to target.
+
+## Automated CI/CD Pipeline Overview
+Once changes are pushed, they should be tested on development environments. Three environments are recommended: one for lighter smoke tests which can be run on each merge but need to be tested with more reliable components than can be done locally (the “integration environment” below); one for more comprehensive testing, which can be run on groups of changes before a deployment (the “staging environment” below); one for destructive tests, which is designed to be safe to break (the “security environment” below). This allows the CI/CD process to be run continuously with comprehensive testing, without different stages affecting each other.
+
+The integration environment can be lighter-weight, as it is not a production-like environment. The staging and security environments should be as similar to production environments as possible, with well-simulated/mocked versions of the external services. Lots of the external data sources are unpredictable and inconsistent, with periods of high and low activity. They may come with unexpected noise or badly formatted data. They are likely to have spikes at similar times to each other, as they are responsive to natural disasters. While this cannot be perfectly mocked, you should attempt to simulate this variation and inconsistency.
+
+## Integration Environment
+The integration environment sits earlier in the CI/CD pipeline than the other development environments and should be used for simple smoke tests. This should include integration tests (both at the service level and the API level), unit tests and contract tests.
+
+In a system with many interacting components, integration testing is critical for exposing issues which are not apparent during isolated testing by an individual developer pre-commit.
+
+## Security Environment
+The security environment is for destructive security tests. As stated earlier, the system is a target for attack and should be thoroughly security-tested. Dynamic Application Security Testing is an easy way to test for vulnerabilities without requiring tester/developer time, as pre-built frameworks can be set up in the pipeline. It simulates malicious attacks, covering data/input vulnerability, authentication checks, and session management _(CrowdStrike, 2025)_ REFERENCE. This is not sufficient alone but it allows human testers to focus on more complex tests.
+ 
+There are many potential weak points in the system, as it links to many external services, including both front-ends, Twitter, external agencies, and other parts of the internet being scraped for data. All of these should be covered by penetration tests (where testers attempt to breach security _(National Cyber Security Centre, 2017)_ REFERENCE). These are time-consuming, but necessary on a public-facing and critical system. To increase the effectiveness of penetration testing, Interactive Application Security Testing (IAST) can be injected into the application while the tests are being run _(Crowdstrike, 2025)_ REFERENCE. This is a low-cost way to increase the insight gained by tests, by looking at the internal application as it is running.
+ 
+Fuzzing, which runs random/generative input/output tests _(BlackDuck, c.2026)_ REFERENCE, could also be used at this stage, but the results are often unclear and can take a lot of time for developers/testers to interpret and fix. With the above security testing in place, fuzzing is not necessary, given the time overhead.
+
+## Staging Environment
+The staging environment is a production-like environment for tests. The primary focus should be load testing. The application will have a high load on all of its endpoints, so all of these should be tested, both isolated and as a whole system. Benchmarks should be set based on expected traffic, which can be discussed with local authorities. This testing should also ensure that denial of service attacks can be flagged, and that mitigations for them are sufficient.
+ 
+In addition to load testing, the user interfaces should be tested at this stage. In this case, exploratory testing is more appropriate than UAT, as the product owner is not the end user. Both UIs should be tested while attempting to simulate a high-stress environment, with different focuses. The call-centre site should allow users to quickly retrieve and convey information with a high volume of calls, and the public-facing site should be easy to navigate and prioritise showing easily digested advice over more complex details.
+
+## Production Environment(s)
+Finally, the application can be deployed. Beta testing versions could be released at this stage, or A/B tests could be used, but they are not necessary for this system. The focus of the application is to be functional and resilient in times of emergency, which is covered by the testing outlined above. While beta or A/B testing could find some usability issues, their primary function is to identify user preferences and refine UX. It would take lots of time and resource to find users, gather data, allow them to use the system, and respond to their results. It would not be worth the cost and it is more important that this system has reliable versions released quickly than having extra UI/usability testing. It is also important that advice being given is consistent, which could not be guaranteed with multiple versions in use at the same time. The agile process involves regular communication with the product owner, so most issues which could have been found in these stages of testing can be reported back and resolved this way instead.
+
+---
+
+<center><h2>References</h2></center>
+
+[^1]: Black Duck. “Glossary: Fuzz Testing.” _Black Duck, c. 2026_, <https://www.blackduck.com/glossary/what-is-fuzz-testing.html>.
+
+[^2]: Gale, Jamie. “Dynamic Application Security Testing (DAST) Explained.” _CrowdStrike, 15-04-2025_, <https://www.crowdstrike.com/en-us/cybersecurity-101/cloud-security/dynamic-application-security-testing-dast/>.
+
+[^3]: Gale, Jamie. “Introduction to Interactive Application Security Testing (IAST).” _CrowdStrike, 10-04-2025_, <https://www.crowdstrike.com/en-us/cybersecurity-101/cloud-security/interactive-application-security-testing-iast/>.
+
+[^4]: Kesavan, Elavarasi. “Shift-Left and Continuous Testing in Quality Assurance Engineering Ops and DevOps.” _International Journal of Scientific Research and Modern Technology, vol. 3, no. 1, p. 1, 2024_, <https://www.researchgate.net/publication/396863242_Shift-Left_and_Continuous_Testing_in_Quality_Assurance_Engineering_Ops_and_DevOps>.
+
+[^5]: National Cyber Security Centre. “Penetration testing.” _National Cyber Security Centre, 08-08-2017_, <https://www.ncsc.gov.uk/guidance/penetration-testing>.
+
+[^6]: Fellows, Matt. “What is contract testing and why should I try it?” _Pact Flow, 02-09-2023_, <https://pactflow.io/blog/what-is-contract-testing/>.
+
+---
+<br/>
+<br/>
+
+<center><h1>Part 2</h1></center>
+
 ## Assumptions
 - Wind speeds can only be integers: it is not type-hinted, but the range() function is used.
 - I do not need to test for negative (or other unreasonable) inputs: logical, but not specified in the brief or attempted anywhere in the code.
