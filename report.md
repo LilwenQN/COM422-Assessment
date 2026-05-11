@@ -228,7 +228,24 @@ def __init__(self, name, wind_speed):
 ```
 ![image](/screenshots/test_add_storm_duplicate_name_different_type_FIX.png)
 
-I noticed another issue while debugging this. The type check on add_storm always returns true. It wouldn't have been caught in a unit test, as there are only 3 children of Storm and they are all valid (and Storm is abstract so cannot be created alone). I have fixed it below.
+### Fail 2
+![image](/screenshots/test_add_storm_invalid.png)
+```python
+class Cyclone (Storm):
+    def __init__(self, name, wind_speed):
+        super().__init__(name, wind_speed)
+        
+    def calculate_classification(self) -> str: # type hint
+        return "Tropical"
+
+    def get_advice(self) -> str: #type hint
+        return "RUN"
+    
+def test_add_storm_invalid_type(storm_centre):
+    assert storm_centre.add_storm(Cyclone("cyclone", 30)) == False
+```
+Issue: Storms which are not a Blizzard, Tornado or Hurricane can be added
+Fix: Fix condition
 ```python
 def add_storm(self, storm: Storm) -> bool:
     if (len(self.storm_list) <= 20
@@ -238,9 +255,9 @@ def add_storm(self, storm: Storm) -> bool:
         return True
     return False
 ```
-All the existing tests passed after this change.
+![image](/screenshots/test_add_storm_invalid_FIX.png)
 
-### Fail 2
+### Fail 3
 ![image](/screenshots/test_add_storm_21.png)
 ```python
 def test_add_storm_21(storm_centre):

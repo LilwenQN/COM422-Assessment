@@ -1,4 +1,5 @@
 import pytest
+from Storm import Storm
 from blizzard import Blizzard
 from hurricane import Hurricane
 from tornado import Tornado
@@ -71,3 +72,16 @@ def test_add_storm_21(storm_centre):
     for i in range(20):
         assert storm_centre.add_storm(Hurricane(str(i), 100)) == True
     assert storm_centre.add_storm(Hurricane("21", 100)) == False
+
+class Cyclone (Storm):
+    def __init__(self, name, wind_speed):
+        super().__init__(name, wind_speed)
+        
+    def calculate_classification(self) -> str: # type hint
+        return "Tropical"
+
+    def get_advice(self) -> str: #type hint
+        return "RUN"
+    
+def test_add_storm_invalid_type(storm_centre):
+    assert storm_centre.add_storm(Cyclone("cyclone", 30)) == False
